@@ -8,6 +8,8 @@ function DiscoveryTable1() {
   const [data, setData] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [currentPage, setCurrentPage] = useState(1);
+  const [tableData, setTableData] = useState([]); // State to manage table data with manual entries
+  const [imageUploads, setImageUploads] = useState({}); // State to store uploaded images
   const recordsPerPage = 5;
 
   useEffect(() => {
@@ -31,7 +33,21 @@ function DiscoveryTable1() {
           throw new Error(response.data.message || "API returned an error");
         }
 
-        setData(response.data.data || []);
+        const fetchedData = response.data.data || [];
+        // Add manual entry fields to each record
+        const enrichedData = fetchedData.flatMap((item, index) =>
+          (item.vulnerabilities || []).map((vuln, vulnIndex) => ({
+            ...item,
+            vuln,
+            index: `${index}-${vulnIndex}`,
+            updateStatus: vuln.updateStatus || "Pending", // Default to Pending if not set
+            fixedStatus: "Not Fixed", // Default for Fixed column
+            foundDate: vuln.foundDate || new Date().toISOString(), // Mock date if not present
+          }))
+        );
+
+        setData(fetchedData);
+        setTableData(enrichedData);
       } catch (error) {
         console.error("Error fetching reports:", error.message);
       }
@@ -45,36 +61,65 @@ function DiscoveryTable1() {
       sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
     setSortConfig({ key, direction });
 
-    const sortedData = [...data].sort((a, b) => {
-      const aValue = a[key]?.toString().toLowerCase() || "";
-      const bValue = b[key]?.toString().toLowerCase() || "";
+    const sortedData = [...tableData].sort((a, b) => {
+      let aValue, bValue;
+      if (key === "foundDate") {
+        aValue = new Date(a[key] || 0).getTime();
+        bValue = new Date(b[key] || 0).getTime();
+      } else if (key === "updateStatus" || key === "fixedStatus") {
+        aValue = (a[key] || "").toString().toLowerCase();
+        bValue = (b[key] || "").toString().toLowerCase();
+      } else {
+        aValue = (a[key] || a.vuln[key] || "").toString().toLowerCase();
+        bValue = (b[key] || b.vuln[key] || "").toString().toLowerCase();
+      }
 
-      return direction === "asc"
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
+      if (direction === "asc") {
+        return typeof aValue === "number"
+          ? aValue - bValue
+          : aValue.localeCompare(bValue);
+      } else {
+        return typeof aValue === "number"
+          ? bValue - aValue
+          : bValue.localeCompare(aValue);
+      }
     });
 
-    setData(sortedData);
+    setTableData(sortedData);
   };
 
-  const filteredData = data.filter((item) =>
-    Object.values(item).some((value) =>
+  const handleInputChange = (index, field, value) => {
+    setTableData((prevData) =>
+      prevData.map((item) =>
+        item.index === index ? { ...item, [field]: value } : item
+      )
+    );
+  };
+
+  const handleImageUpload = (index, event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImageUploads((prev) => ({
+          ...prev,
+          [index]: e.target.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const filteredData = tableData.filter((item) =>
+    Object.values({ ...item, ...item.vuln }).some((value) =>
       value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
-  const flattenedData = filteredData.flatMap((item, index) =>
-    (item.vulnerabilities || []).map((vuln, vulnIndex) => ({
-      ...item,
-      vuln,
-      index: `${index}-${vulnIndex}`,
-    }))
-  );
-
-  const totalRecords = flattenedData.length;
+  const totalRecords = filteredData.length;
   const totalPages = Math.ceil(totalRecords / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
-  const paginatedData = flattenedData.slice(
+  const paginatedData = filteredData.slice(
     startIndex,
     startIndex + recordsPerPage
   );
@@ -141,45 +186,69 @@ function DiscoveryTable1() {
       <table>
         <thead>
           <tr>
-            {["URL", "DOMAIN", "IP", "PROGRESS", "STATUS"].map((header) => (
-              <th key={header} onClick={() => handleSort(header.toLowerCase())}>
-                {header} <ChevronDown className="inline-block w-4 h-4" />
-              </th>
-            ))}
+            {["DOMAIN", "FOUND/UPDATED DATE", "STATUS", "BUG STATUS"].map(
+              (header) => (
+                <th
+                  key={header}
+                  onClick={() =>
+                    handleSort(
+                      header === "FOUND/UPDATED DATE"
+                        ? "foundDate"
+                        : header === "STATUS"
+                        ? "updateStatus"
+                        : header === "FIXED"
+                        ? "fixedStatus"
+                        : header.toLowerCase()
+                    )
+                  }
+                >
+                  {header} <ChevronDown className="inline-block w-4 h-4" />
+                </th>
+              )
+            )}
           </tr>
         </thead>
         <tbody>
           {paginatedData.map((item) => (
             <tr key={item.index}>
-              <td>{item.vuln.location || "N/A"}</td>
               <td>{item.domain || "N/A"}</td>
-              <td>{item.ip_address || "N/A"}</td>
               <td>
-                <div className="progress-container">
-                  <div
-                    className="progress-bar"
-                    style={{
-                      width: `${
-                        item.vuln.cvss_score ? item.vuln.cvss_score * 10 : 0
-                      }%`,
-                    }}
-                  ></div>
-                </div>
+                {new Date(item.foundDate).toLocaleDateString() || "N/A"}
               </td>
-              <td>
-                <span
-                  className={`status-tag ${
-                    item.vuln.cvss_score >= 7
-                      ? "critical"
-                      : item.vuln.cvss_score >= 4
-                      ? "medium"
-                      : item.vuln.cvss_score > 0
-                      ? "low"
-                      : "pending"
-                  }`}
+              <td>{item.updateStatus}</td>
+              <td className="fixed-column">
+                <select
+                  value={item.fixedStatus}
+                  onChange={(e) => {
+                    const newStatus = e.target.value;
+                    handleInputChange(item.index, "fixedStatus", newStatus);
+                    if (newStatus === "Fixed") {
+                      document
+                        .getElementById(`image-upload-${item.index}`)
+                        .click();
+                    }
+                  }}
+                  className="fixed-status-select"
                 >
-                  {item.vuln.cvss_score ? `${item.vuln.cvss_score}` : "Pending"}
-                </span>
+                  <option value="Not Fixed">Not Fixed</option>
+                  <option value="Fixed">Fixed</option>
+                </select>
+                <input
+                  type="file"
+                  id={`image-upload-${item.index}`}
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => handleImageUpload(item.index, e)}
+                />
+                {imageUploads[item.index] && (
+                  <div className="image-preview">
+                    <img
+                      src={imageUploads[item.index]}
+                      alt="Proof of fix"
+                      style={{ maxWidth: "100px", marginTop: "0.5rem" }}
+                    />
+                  </div>
+                )}
               </td>
             </tr>
           ))}

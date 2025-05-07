@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import "./Overview.css";
 
 const vulnerabilityColors = ["#dc2626", "#f97316", "#facc15", "#22c55e"];
@@ -24,6 +25,7 @@ export default function VulnerableTargetsTable() {
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
+  const navigate = useNavigate(); // Hook for navigation
 
   useEffect(() => {
     const fetchVulnerableTargets = async () => {
@@ -41,7 +43,6 @@ export default function VulnerableTargetsTable() {
           throw new Error(response.data.message || "API returned an error");
         }
 
-        // Group data by URL and count vulnerabilities for each severity
         const groupedData = response.data.data.reduce((acc, vuln) => {
           const url = vuln.location || "Unknown Location";
           if (!acc[url]) {
@@ -61,13 +62,11 @@ export default function VulnerableTargetsTable() {
           return acc;
         }, {});
 
-        // Transform grouped data into the format expected by the component
         const transformedData = Object.values(groupedData).map((target) => ({
           url: target.url,
           vulnerabilities: target.vulnerabilities,
         }));
 
-        // Normalize data as in the original structure
         const normalizedData = transformedData.map((target) => {
           const allSeverities = target.vulnerabilities.map((vuln) => ({
             score: vuln.score,
@@ -90,6 +89,14 @@ export default function VulnerableTargetsTable() {
     fetchVulnerableTargets();
   }, [userId, token]);
 
+  // Handle click on target to redirect
+  const handleTargetClick = (url) => {
+    navigate(`/discovery`);
+  };
+  // const handleTargetClick = (url) => {
+  //   navigate(`/discovery/${encodeURIComponent(url)}`);
+  // };
+
   return (
     <div className="data-card">
       <h2>Vulnerable Targets</h2>
@@ -101,9 +108,9 @@ export default function VulnerableTargetsTable() {
         <div className="list">
           {targetsData.map((target, index) => (
             <div key={index} className="list-item">
-              <a href={target.url} target="_blank" rel="noopener noreferrer">
+              <span onClick={() => handleTargetClick(target.url)}>
                 {target.url}
-              </a>
+              </span>
               <div style={{ display: "flex", gap: "0.5rem" }}>
                 {target.vulnerabilities.map((vulnerability, vIndex) => (
                   <VulnerabilityIndicator

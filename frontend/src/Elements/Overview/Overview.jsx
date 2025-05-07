@@ -15,17 +15,46 @@ function Overview() {
     Medium: 0,
     Low: 0,
   });
+  const [companyName, setCompanyName] = useState(""); // State for company name
+
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const theme = localStorage.getItem("theme") || "light";
     document.documentElement.setAttribute("data-theme", theme);
   }, []);
 
+  // Fetch company name by retrieving all users and filtering by userId
+  useEffect(() => {
+    const fetchCompanyName = async () => {
+      if (!userId || !token) return;
+
+      try {
+        const response = await axios.get("http://localhost:5000/api/users", {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true, // Align with previous implementations
+        });
+
+        // Find the user with the matching userId
+        const user = response.data.find((u) => u._id === userId);
+        if (user) {
+          setCompanyName(user.companyName || "Company");
+        } else {
+          setCompanyName("Company"); // Fallback if user not found
+        }
+      } catch (error) {
+        console.error("Error fetching company name:", error);
+        setCompanyName("Company"); // Fallback name
+      }
+    };
+
+    fetchCompanyName();
+  }, [userId, token]);
+
+  // Fetch vulnerability data
   useEffect(() => {
     const fetchVulnerabilityData = async () => {
-      const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
-
       if (!userId || !token) return;
 
       try {
@@ -51,30 +80,30 @@ function Overview() {
     };
 
     fetchVulnerabilityData();
-  }, []);
+  }, [userId, token]);
 
   return (
     <div className="dashboard-container">
       <Navbar />
       <div className="main-content">
         <div className="header">
-          <h1>Security Dashboard</h1>
+          <h1>{companyName} Security Dashboard</h1>
         </div>
 
         <div className="stats-grid">
-          <div className="stat-card">
+          <div className="stat-card critical">
             <h3>Critical</h3>
             <p>{severityCounts.Critical}</p>
           </div>
-          <div className="stat-card">
+          <div className="stat-card high">
             <h3>High</h3>
             <p>{severityCounts.High}</p>
           </div>
-          <div className="stat-card">
+          <div className="stat-card medium">
             <h3>Medium</h3>
             <p>{severityCounts.Medium}</p>
           </div>
-          <div className="stat-card">
+          <div className="stat-card low">
             <h3>Low</h3>
             <p>{severityCounts.Low}</p>
           </div>

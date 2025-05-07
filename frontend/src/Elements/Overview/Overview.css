@@ -47,6 +47,7 @@ body {
   padding: 2rem;
   background: var(--bg-primary);
   margin-left: 200px;
+  overflow-y: auto; /* Ensure main content is scrollable */
 }
 
 .header {
@@ -93,20 +94,79 @@ body {
   border-radius: 8px;
   box-shadow: var(--shadow);
   text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Severity-specific colors */
+.stat-card.critical {
+  background: linear-gradient(135deg, #FF4040, #D00000); /* Red */
+  color: #ffffff;
+}
+
+.stat-card.high {
+  background: linear-gradient(135deg, #FF8C00, #FF4500); /* Orange */
+  color: #ffffff;
+}
+
+.stat-card.medium {
+  background: linear-gradient(135deg, #FFD700, #FFA500); /* Yellow */
+  color: #1f2937;
+}
+
+.stat-card.low {
+  background: linear-gradient(135deg, #32CD32, #228B22); /* Green */
+  color: #ffffff;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: var(--shadow);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: var(--shadow);
+  }
 }
 
 .stat-card h3 {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-secondary);
   margin-bottom: 0.5rem;
   text-transform: uppercase;
+}
+
+.stat-card.critical h3,
+.stat-card.high h3,
+.stat-card.low h3 {
+  color: #ffffff; /* White text for better contrast on dark backgrounds */
+}
+
+.stat-card.medium h3 {
+  color: #1f2937; /* Dark text for better contrast on yellow */
 }
 
 .stat-card p {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--text-primary);
+}
+
+.stat-card.critical p,
+.stat-card.high p,
+.stat-card.low p {
+  color: #ffffff; /* White text for better contrast on dark backgrounds */
+}
+
+.stat-card.medium p {
+  color: #1f2937; /* Dark text for better contrast on yellow */
 }
 
 .summary-table {
@@ -182,9 +242,11 @@ body {
   color: var(--text-primary);
   font-weight: 500;
   font-size: 0.875rem;
+  cursor: pointer; /* Indicate clickable elements */
 }
 
-.data-card .list-item a:hover {
+.data-card .list-item a:hover,
+.data-card .list-item span:hover {
   color: var(--accent);
 }
 

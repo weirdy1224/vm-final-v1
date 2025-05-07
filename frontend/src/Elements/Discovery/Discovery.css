@@ -30,6 +30,7 @@
   background: var(--bg-primary);
   margin-left: 200px;
   margin-top: 100px;
+  overflow-y: auto; /* Ensure the container is scrollable */
 }
 
 .data-card {
@@ -110,49 +111,31 @@ tbody tr:hover {
   background-color: var(--border);
 }
 
-.progress-container {
-  background-color: var(--border);
-  border-radius: 0.375rem;
-  overflow: hidden;
-  height: 0.5rem;
+.fixed-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.progress-bar {
-  background-color: #3b82f6;
-  height: 100%;
+.fixed-status-select {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
 }
 
-.status-tag {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+.fixed-status-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 4px rgba(109, 40, 217, 0.3);
 }
 
-.status-tag.critical {
-  background: #dc2626;
-  color: #ffffff;
-}
-
-.status-tag.high {
-  background: #f97316;
-  color: #ffffff;
-}
-
-.status-tag.medium {
-  background: #facc15;
-  color: #1f2937;
-}
-
-.status-tag.low {
-  background: #22c55e;
-  color: #ffffff;
-}
-
-.status-tag.pending {
-  background: var(--border);
-  color: var(--text-secondary);
+.image-preview img {
+  max-width: 100px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
 }
 
 .pagination {

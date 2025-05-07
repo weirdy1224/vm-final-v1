@@ -10,7 +10,7 @@ function Discovery() {
   }, []);
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen">
       <Navbar />
       <div className="discovery-container">
         <DiscoveryTable />
