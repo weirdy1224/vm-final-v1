@@ -1,3 +1,5 @@
-1. Pdf download added in reports window
-2. Specific vulnerability dummy page created
-3. Pdf upload has some problems - not accurate to the lore
+wassuppp 
+
+MADE BY HEBE & CO
+
+COPYRIGHTS KU U HAVE CONTACT OUR COMPANY DON - DHIVA BRO AND COMPANY BOSS - RAM BRO 
