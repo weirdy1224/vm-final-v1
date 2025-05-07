@@ -1,0 +1,126 @@
+/* client.css */
+.container {
+    width: 80%;
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.user-card {
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffffff, #f5f7fa);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    animation: fadeInCard 0.5s ease-out;
+}
+
+@keyframes fadeInCard {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0, 123, 255, 0.2);
+    background: linear-gradient(135deg, #e8f4ff, #f5f7fa);
+}
+
+.user-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+    text-transform: capitalize;
+}
+
+.user-detail {
+    margin-bottom: 0.8rem;
+    font-size: 1rem;
+    color: #444;
+    line-height: 1.5;
+}
+
+.user-detail a {
+    color: #4c8bf5;
+    text-decoration: none;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.user-detail a:hover {
+    color: #3b7ccf;
+    text-decoration: underline;
+}
+
+.no-users {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #666;
+    margin-top: 1.5rem;
+    font-weight: 500;
+    padding: 1rem;
+    background: #f1f1f1;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-out;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        margin: 1rem;
+        width: 90%;
+    }
+
+    .users-grid {
+        grid-template-columns: 1fr; /* Full width on mobile */
+        gap: 1rem;
+    }
+
+    .user-card {
+        max-width: 100%;
+    }
+}

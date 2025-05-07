@@ -1,0 +1,396 @@
+/* upload.css */
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.upload-area {
+    border: 2px dashed #4c8bf5;
+    border-radius: 12px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 450px;
+    margin: 2rem auto;
+    text-align: center;
+    background: linear-gradient(135deg, #f5f7fa, #e0e8f0);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area.dragging {
+    background-color: #e8f4ff;
+    border-color: #3b7ccf;
+    box-shadow: 0px 6px 18px rgba(0, 123, 255, 0.2);
+}
+
+.upload-content p {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.file-upload-label {
+    display: inline-block;
+    padding: 1rem 2rem;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #4c8bf5, #3b7ccf);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.2s ease-in-out, box-shadow 0.3s;
+    box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.file-upload-label:hover {
+    background: linear-gradient(45deg, #3b7ccf, #0056b3);
+    transform: scale(1.05);
+    box-shadow: 0px 6px 18px rgba(0, 123, 255, 0.3);
+}
+
+.file-upload-input {
+    display: block; /* Hide the default file input, use label for styling */
+}
+.file-upload{
+    display: none;
+}
+.file-list {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #444;
+}
+
+.submit-container {
+    margin-top: 1.5rem;
+}
+
+.submit-button {
+    padding: 1rem 2rem;
+    background: linear-gradient(45deg, #4c8bf5, #3b7ccf);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.2s ease-in-out, box-shadow 0.3s;
+    display: block;
+    margin: 1rem auto;
+    box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.submit-button:hover {
+    background: linear-gradient(45deg, #3b7ccf, #0056b3);
+    transform: scale(1.05);
+    box-shadow: 0px 6px 18px rgba(0, 123, 255, 0.3);
+}
+
+.options-container {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.option-button {
+    padding: 1rem 2rem;
+    background: linear-gradient(45deg, #4c8bf5, #3b7ccf);
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    transition: background-color 0.3s, transform 0.2s ease-in-out, box-shadow 0.3s;
+    box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.option-button:hover {
+    background: linear-gradient(45deg, #3b7ccf, #0056b3);
+    transform: scale(1.05);
+    box-shadow: 0px 6px 18px rgba(0, 123, 255, 0.3);
+}
+
+.back-button {
+    display: block;
+    margin: 1rem auto;
+    padding: 0.8rem 1.5rem;
+    background: none;
+    border: 2px solid #4c8bf5;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #4c8bf5;
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.3s, background-color 0.3s, transform 0.2s ease-in-out, box-shadow 0.3s;
+    box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.1);
+}
+
+.back-button:hover {
+    background-color: #e8f4ff;
+    color: #3b7ccf;
+    transform: scale(1.05);
+    box-shadow: 0px 6px 18px rgba(0, 123, 255, 0.2);
+}
+
+.manual-form {
+    text-align: left;
+    max-width: 600px;
+    margin: 0 auto;
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.report-title,
+.upload-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-label {
+    font-weight: 500;
+    display: block;
+    margin-top: 1rem;
+    color: #444;
+    font-size: 1rem;
+}
+
+.form-input,
+.impact-input,
+.remediation-input {
+    width: 100%;
+    padding: 0.9rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    background: #fff;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 15px;
+}
+.file-name {
+    width: 100%;
+    padding: 0.9rem;
+    margin-top: 0.5rem;
+    /* border: 1px solid #ddd;
+    border-radius: 8px; */
+    font-size: 1rem;
+    color: #333;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+.form-input:focus,
+.impact-input:focus,
+.remediation-input:focus {
+    border-color: #4c8bf5;
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 0.9rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    min-height: 120px;
+    resize: vertical;
+    color: #333;
+    background: #fff;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-textarea:focus {
+    border-color: #4c8bf5;
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+.vulnerability-card {
+    margin-top: 1.5rem;
+    margin-bottom: 20px;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffffff, #f5f7fa);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 500px;
+    max-width: 600px;
+    animation: fadeInCard 0.5s ease-out;
+}
+
+@keyframes fadeInCard {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.vulnerability-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.add-button,
+.add-poc-button,
+.add-impact-button,
+.add-remediation-button {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 10px;
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(45deg, #4c8bf5, #3b7ccf);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s ease-in-out, box-shadow 0.3s;
+    width: 100%;
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.add-button:hover,
+.add-poc-button:hover,
+.add-impact-button:hover,
+.add-remediation-button:hover {
+    background: linear-gradient(45deg, #3b7ccf, #0056b3);
+    transform: scale(1.05);
+    box-shadow: 0px 6px 18px rgba(0, 123, 255, 0.3);
+}
+
+.impact-item,
+.remediation-item {
+    margin-bottom: 1rem;
+}
+
+.poc-item {
+    margin-top: 1rem;
+}
+
+.poc-image {
+    max-width: 120px;
+    margin-top: 1rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.poc-image:hover {
+    transform: scale(1.1);
+}
+
+.response-container {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: #f1f1f1;
+    text-align: left;
+    overflow-x: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.5s ease-out;
+}
+
+.response-container pre {
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #333;
+}
+
+.upload-message {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: #444;
+    text-align: center;
+    font-weight: 500;
+}
+
+.upload-container {
+    text-align: center;
+    max-width: 450px;
+    margin: 0 auto;
+    animation: slideIn 0.5s ease-out;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        margin: 1rem;
+        width: 90%;
+    }
+
+    .upload-area {
+        width: 100%;
+        max-width: 100%;
+        padding: 1.5rem;
+    }
+
+    .manual-form {
+        max-width: 100%;
+    }
+
+    .vulnerability-card {
+        max-width: 100%;
+    }
+
+    .add-button,
+    .add-poc-button,
+    .add-impact-button,
+    .add-remediation-button {
+        max-width: 100%;
+    }
+}

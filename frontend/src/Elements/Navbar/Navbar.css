@@ -1,0 +1,105 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+nav {
+  width: 200px;
+  height: 100vh;
+  background: linear-gradient(
+    180deg,
+    var(--navbar-bg-start) 0%,
+    var(--navbar-bg-end) 100%
+  );
+  color: #9ca3af;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+}
+
+nav a {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+nav a:hover {
+  background-color: #374151;
+}
+
+nav a.active {
+  color: #f59e0b;
+  border-left: 4px solid #f59e0b;
+}
+
+.logo {
+  width: 100%;
+  height: 100px;
+  background-color: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.logo img {
+  max-width: 80%;
+  max-height: 80%;
+}
+
+[data-theme="dark"] .logo {
+  background-color: #4b5563;
+}
+
+.navbar-footer {
+  margin-top: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.theme-toggle,
+.logout-button {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.logout-button {
+  background: #ff4d4f;
+  color: #ffffff;
+}
+
+.theme-toggle:hover {
+  background: var(--accent-hover);
+  transform: scale(1.02);
+}
+
+.logout-button:hover {
+  background: #e6393b;
+  transform: scale(1.02);
+}
+
+[data-theme="dark"] .theme-toggle {
+  background: #4b5563;
+}
+
+[data-theme="dark"] .logout-button {
+  background: #ff7875;
+}
