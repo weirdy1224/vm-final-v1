@@ -63,6 +63,21 @@ export default function AppSidebar({ onNavigate }) {
                   </button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  className="hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+                >
+                  <button
+                    onClick={() => onNavigate("/admin")}
+                    className="flex items-center w-full text-left"
+                    aria-label="Navigate to Upload Reports"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    <span>Update Testing Progress</span>
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

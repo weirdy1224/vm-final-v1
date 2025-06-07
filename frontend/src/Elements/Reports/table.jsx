@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -22,7 +21,7 @@ const handleDownload = async (filePath, domain) => {
     }
 
     const fileUrl = filePath.startsWith("http")
-      ? filePath
+      ? fileUrl
       : `${BASE_URL}${filePath}`;
     console.log("🔗 File Download URL:", fileUrl);
 
@@ -30,10 +29,6 @@ const handleDownload = async (filePath, domain) => {
       ? domain.replace(/https?:\/\//, "").replace(/\W+/g, "_")
       : "report";
 
-    // ✅ Try opening in a new tab (optional for preview)
-    window.open(fileUrl, "_blank");
-
-    // ✅ Use Fetch API to download as Blob (handles CORS issues)
     const response = await fetch(fileUrl);
     if (!response.ok)
       throw new Error(`Failed to fetch file: ${response.status}`);
@@ -41,14 +36,12 @@ const handleDownload = async (filePath, domain) => {
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
 
-    // ✅ Create and trigger download
     const link = document.createElement("a");
     link.href = url;
     link.download = `${sanitizedDomain}.pdf`;
     document.body.appendChild(link);
     link.click();
 
-    // ✅ Cleanup
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (error) {
@@ -116,22 +109,22 @@ export default function ReportTable() {
   }, []);
 
   return (
-    <div className="w-full space-y-4">
-      {/* Filter Input */}
-      <div className="relative">
-        <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-        <Input
-          placeholder="Filter reports..."
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="pl-9 max-w-full"
-        />
-      </div>
+    <div className="report-container">
+      <div className="data-card">
+        {/* Filter Input */}
+        <div className="search-bar">
+          <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Input
+            placeholder="Filter reports..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="pl-9 max-w-full"
+          />
+        </div>
 
-      {/* Report Table */}
-      <div className="rounded-md border">
+        {/* Report Table */}
         <Table>
-          <TableHeader className="bg-blue-900 text-white font-medium h-11">
+          <TableHeader>
             <TableRow>
               <TableHead>S.No</TableHead>
               <TableHead>Report Template</TableHead>
@@ -149,10 +142,7 @@ export default function ReportTable() {
               </TableRow>
             ) : error ? (
               <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-red-500 text-center py-4"
-                >
+                <TableCell colSpan={5} className="error-message text-center py-4">
                   {error}
                 </TableCell>
               </TableRow>
@@ -165,18 +155,16 @@ export default function ReportTable() {
                   <TableCell>{report.createdOn}</TableCell>
                   <TableCell>
                     {report.filePath ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-6 rounded-full text-xs"
+                      <button
+                        className="download-button"
                         onClick={() =>
                           handleDownload(report.filePath, report.domain)
                         }
                       >
                         Download PDF
-                      </Button>
+                      </button>
                     ) : (
-                      <span className="text-gray-500">Not Available</span>
+                      <span className="not-available">Not Available</span>
                     )}
                   </TableCell>
                 </TableRow>
