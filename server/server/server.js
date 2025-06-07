@@ -36,12 +36,12 @@ app.use(
   express.static(path.join(__dirname, "uploads/images"))
 );
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api", reportsRoutes);
 
 if (!fs.existsSync(BASE_UPLOAD_PATH)) {
   fs.mkdirSync(BASE_UPLOAD_PATH, { recursive: true });
 }
+
 // Directory Setup
 const uploadsDir = path.join(__dirname, "uploads");
 const imageDirBase = path.join(__dirname, "uploads/images");
@@ -64,16 +64,9 @@ const LoginUserSchema = new mongoose.Schema({
 });
 const LoginUser = mongoose.model("LoginUser", LoginUserSchema);
 
-const ImageSchema = new mongoose.Schema({
-  imageUrl: String,
-  uploadedAt: { type: Date, default: Date.now },
-});
-
-module.exports = mongoose.model("Image", ImageSchema);
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, BASE_UPLOAD_PATH); // Saves files in 'uploads/reports'
+    cb(null, BASE_UPLOAD_PATH);
   },
   filename: (req, file, cb) => {
     cb(null, `report-${Date.now()}${path.extname(file.originalname)}`);
@@ -81,13 +74,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
-const imageStorage = multer.diskStorage({
-  destination: "./uploads/images",
-  filename: (req, file, cb) =>
-    cb(null, `image-${Date.now()}${path.extname(file.originalname)}`),
-});
-const uploadImage = multer({ storage: imageStorage });
 
 async function processPDF(pdfPath, userId) {
   try {
@@ -144,7 +130,7 @@ async function processPDF(pdfPath, userId) {
       });
     });
 
-    delete jsonOutput.images; // Remove temporary field
+    delete jsonOutput.images;
     console.log("Final JSON Output:", JSON.stringify(jsonOutput, null, 2));
     return jsonOutput;
   } catch (error) {
@@ -194,15 +180,18 @@ function processTextToJSON(text) {
         /Remediation:\s*([\s\S]*?)(?=$|\n\n|\d+\)\s*Bug Name:)/i
       ),
       image: "",
+      updateStatus: "Pending",
     };
   });
 
   return jsonOutput;
 }
+
 function extractValue(text, regex) {
   const match = text.match(regex);
   return match ? match[1].trim() : "";
 }
+
 function extractImagesWithMuPDF(pdfPath, outputDir) {
   return new Promise((resolve) => {
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
@@ -262,6 +251,7 @@ function extractSectionItems(text, regex, isPOC = false) {
   }
   return items;
 }
+
 const BASE_URL = "http://localhost:5000";
 
 app.get("/api/users", authMiddleware, async (req, res) => {
@@ -272,6 +262,55 @@ app.get("/api/users", authMiddleware, async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching users", error: error.message });
+  }
+});
+
+app.get("/api/vulnerabilities/:userId", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const reports = await Report.find({ userId });
+
+    const vulnerabilities = reports.flatMap((report) =>
+      (report.vulnerabilities || []).map((vuln, vulnIndex) => ({
+        reportId: report._id,
+        vulnIndex,
+        bugName: vuln.bug_name,
+        domain: report.domain,
+        foundDate: vuln.foundDate || report.uploadedAt || new Date(),
+        updateStatus: vuln.updateStatus || "Pending",
+      }))
+    );
+
+    res.json(vulnerabilities);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching vulnerabilities", error: error.message });
+  }
+});
+
+app.put("/api/update-vulnerability-progress", authMiddleware, async (req, res) => {
+  try {
+    const { reportId, vulnIndex, updateStatus } = req.body;
+
+    const report = await Report.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    const vulnerability = report.vulnerabilities[vulnIndex];
+    if (!vulnerability) {
+      return res.status(404).json({ message: "Vulnerability not found" });
+    }
+
+    vulnerability.updateStatus = updateStatus;
+    await report.save();
+
+    res.json({ message: "Progress updated successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error updating progress", error: error.message });
   }
 });
 
@@ -331,26 +370,22 @@ app.post("/api/login", authMiddleware, async (req, res) => {
         .json({ message: "Email and password are required" });
     }
 
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
 
-    // Compare entered password with stored hashed password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    // Send response with token
     res.json({
       message: "Login successful",
       user: {
@@ -402,6 +437,7 @@ app.post(
     }
   }
 );
+
 app.post("/api/users", authMiddleware, async (req, res) => {
   try {
     const {
@@ -456,7 +492,6 @@ app.post("/api/users", authMiddleware, async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    // Send response
     res.status(201).json({
       message: "User registered successfully",
       user: {
@@ -482,6 +517,7 @@ app.post("/api/users", authMiddleware, async (req, res) => {
     });
   }
 });
+
 app.post(
   "/api/upload",
   authMiddleware,
@@ -518,6 +554,7 @@ app.post(
     }
   }
 );
+
 app.post(
   "/api/save-report",
   authMiddleware,
@@ -550,7 +587,6 @@ app.post(
             .json({ message: "❌ Vulnerabilities must be a non-empty array" });
         }
 
-        // Basic validation
         parsedVulnerabilities.forEach((vuln, index) => {
           if (!vuln.bug_name || typeof vuln.bug_name !== "string") {
             throw new Error(
@@ -611,13 +647,6 @@ app.post(
     }
   }
 );
-
-app.post("/api/upload-image", uploadImage.single("image"), async (req, res) => {
-  if (!req.file) return res.status(400).json({ message: "No image uploaded" });
-  const imageUrl = `http://localhost:5000/uploads/images/${req.file.filename}`;
-  await Image.create({ imageUrl });
-  res.json({ imageUrl });
-});
 
 const PORT = 5000;
 app.listen(PORT, () =>

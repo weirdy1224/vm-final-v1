@@ -3,13 +3,13 @@ import { ChevronDown, Search } from "lucide-react";
 import axios from "axios";
 import "./Discovery.css";
 
-function DiscoveryTable1() {
+function DiscoveryTable1({ onUpdateProgress }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [currentPage, setCurrentPage] = useState(1);
-  const [tableData, setTableData] = useState([]); // State to manage table data with manual entries
-  const [imageUploads, setImageUploads] = useState({}); // State to store uploaded images
+  const [tableData, setTableData] = useState([]);
+  const [imageUploads, setImageUploads] = useState({});
   const recordsPerPage = 5;
 
   useEffect(() => {
@@ -34,15 +34,15 @@ function DiscoveryTable1() {
         }
 
         const fetchedData = response.data.data || [];
-        // Add manual entry fields to each record
         const enrichedData = fetchedData.flatMap((item, index) =>
           (item.vulnerabilities || []).map((vuln, vulnIndex) => ({
             ...item,
             vuln,
             index: `${index}-${vulnIndex}`,
-            updateStatus: vuln.updateStatus || "Pending", // Default to Pending if not set
-            fixedStatus: "Not Fixed", // Default for Fixed column
-            foundDate: vuln.foundDate || new Date().toISOString(), // Mock date if not present
+            updateStatus: vuln.updateStatus || "Pending",
+            fixedStatus: vuln.fixedStatus || "Not Fixed",
+            foundDate: vuln.foundDate || new Date().toISOString(),
+            bugName: vuln.bug_name || `Bug-${index}-${vulnIndex}`,
           }))
         );
 
@@ -88,25 +88,40 @@ function DiscoveryTable1() {
     setTableData(sortedData);
   };
 
-  const handleInputChange = (index, field, value) => {
-    setTableData((prevData) =>
-      prevData.map((item) =>
-        item.index === index ? { ...item, [field]: value } : item
-      )
-    );
-  };
+  const handleInputChange = async (index, field, value, imageFile) => {
+    try {
+      const updatedItem = tableData.find((item) => item.index === index);
+      if (!updatedItem) return;
 
-  const handleImageUpload = (index, event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImageUploads((prev) => ({
-          ...prev,
-          [index]: e.target.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+      // Update local state first
+      setTableData((prevData) =>
+        prevData.map((item) =>
+          item.index === index ? { ...item, [field]: value } : item
+        )
+      );
+
+      // Call the API to update the server
+      await onUpdateProgress(index, value, imageFile);
+
+      // If an image was uploaded, update the local image state
+      if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImageUploads((prev) => ({
+            ...prev,
+            [index]: e.target.result,
+          }));
+        };
+        reader.readAsDataURL(imageFile);
+      }
+    } catch (error) {
+      console.error("Error updating item:", error);
+      // Revert local state on failure
+      setTableData((prevData) =>
+        prevData.map((item) =>
+          item.index === index ? { ...item, [field]: item[field] } : item
+        )
+      );
     }
   };
 
@@ -196,7 +211,7 @@ function DiscoveryTable1() {
                         ? "foundDate"
                         : header === "STATUS"
                         ? "updateStatus"
-                        : header === "FIXED"
+                        : header === "BUG STATUS"
                         ? "fixedStatus"
                         : header.toLowerCase()
                     )
@@ -215,18 +230,32 @@ function DiscoveryTable1() {
               <td>
                 {new Date(item.foundDate).toLocaleDateString() || "N/A"}
               </td>
-              <td>{item.updateStatus}</td>
+              <td>
+                <select
+                  value={item.updateStatus}
+                  onChange={(e) =>
+                    handleInputChange(item.index, "updateStatus", e.target.value)
+                  }
+                  className="fixed-status-select"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Fixed">Fixed</option>
+                </select>
+              </td>
               <td className="fixed-column">
                 <select
                   value={item.fixedStatus}
                   onChange={(e) => {
                     const newStatus = e.target.value;
-                    handleInputChange(item.index, "fixedStatus", newStatus);
-                    if (newStatus === "Fixed") {
-                      document
-                        .getElementById(`image-upload-${item.index}`)
-                        .click();
-                    }
+                    const imageInput = document.getElementById(`image-upload-${item.index}`);
+                    handleInputChange(
+                      item.index,
+                      "fixedStatus",
+                      newStatus,
+                      newStatus === "Fixed" && imageInput.files[0]
+                        ? imageInput.files[0]
+                        : null
+                    );
                   }}
                   className="fixed-status-select"
                 >
@@ -238,7 +267,16 @@ function DiscoveryTable1() {
                   id={`image-upload-${item.index}`}
                   accept="image/*"
                   style={{ display: "none" }}
-                  onChange={(e) => handleImageUpload(item.index, e)}
+                  onChange={(e) => {
+                    if (e.target.files[0]) {
+                      handleInputChange(
+                        item.index,
+                        "fixedStatus",
+                        item.fixedStatus,
+                        e.target.files[0]
+                      );
+                    }
+                  }}
                 />
                 {imageUploads[item.index] && (
                   <div className="image-preview">
@@ -260,6 +298,6 @@ function DiscoveryTable1() {
   );
 }
 
-export default function DiscoveryTable() {
-  return <DiscoveryTable1 />;
+export default function DiscoveryTable(props) {
+  return <DiscoveryTable1 {...props} />;
 }
