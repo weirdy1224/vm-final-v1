@@ -6,7 +6,7 @@
   --accent: #6d28d9;
   --accent-hover: #5b21b6;
   --border: #e5e7eb;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   --navbar-bg-start: #101a29;
   --navbar-bg-end: #2d426a;
 }
@@ -19,7 +19,7 @@
   --accent: #a78bfa;
   --accent-hover: #8b5cf6;
   --border: #4b5563;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   --navbar-bg-start: #0a1421;
   --navbar-bg-end: #1a2b4a;
 }
@@ -47,7 +47,7 @@ body {
   padding: 2rem;
   background: var(--bg-primary);
   margin-left: 200px;
-  overflow-y: auto; /* Ensure main content is scrollable */
+  overflow-y: auto;
 }
 
 .header {
@@ -103,22 +103,22 @@ body {
 
 /* Severity-specific colors */
 .stat-card.critical {
-  background: linear-gradient(135deg, #FF4040, #D00000); /* Red */
+  background: linear-gradient(135deg, #FF4040, #D00000);
   color: #ffffff;
 }
 
 .stat-card.high {
-  background: linear-gradient(135deg, #FF8C00, #FF4500); /* Orange */
+  background: linear-gradient(135deg, #FF8C00, #FF4500);
   color: #ffffff;
 }
 
 .stat-card.medium {
-  background: linear-gradient(135deg, #FFD700, #FFA500); /* Yellow */
+  background: linear-gradient(135deg, #FFD700, #FFA500);
   color: #1f2937;
 }
 
 .stat-card.low {
-  background: linear-gradient(135deg, #32CD32, #228B22); /* Green */
+  background: linear-gradient(135deg, #32CD32, #228B22);
   color: #ffffff;
 }
 
@@ -147,11 +147,11 @@ body {
 .stat-card.critical h3,
 .stat-card.high h3,
 .stat-card.low h3 {
-  color: #ffffff; /* White text for better contrast on dark backgrounds */
+  color: #ffffff;
 }
 
 .stat-card.medium h3 {
-  color: #1f2937; /* Dark text for better contrast on yellow */
+  color: #1f2937;
 }
 
 .stat-card p {
@@ -162,44 +162,129 @@ body {
 .stat-card.critical p,
 .stat-card.high p,
 .stat-card.low p {
-  color: #ffffff; /* White text for better contrast on dark backgrounds */
+  color: #ffffff;
 }
 
 .stat-card.medium p {
-  color: #1f2937; /* Dark text for better contrast on yellow */
+  color: #1f2937;
 }
 
 .summary-table {
   background: var(--bg-secondary);
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: var(--shadow);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: flex; /* Use flex to control child layout */
+  flex-direction: column;
+  padding: 0; /* Remove any padding */
 }
 
-.summary-table table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.summary-table th,
-.summary-table td {
-  padding: 0.75rem;
+.summary-table-header,
+.summary-table-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   text-align: center;
-  font-size: 0.875rem;
+  align-items: center;
+}
+
+.summary-table-header {
+  background: #2a3b5a;
+  color: #d1d5db;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-table-row {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background 0.3s ease;
+  margin: 0; /* Ensure no margin */
+}
+
+.summary-table-cell {
+  padding: 0.75rem; /* Further reduced padding */
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-right: 1px solid var(--border);
+  line-height: 1; /* Minimize line-height to fit content */
+  margin: 0;
+  display: flex; /* Center content vertically */
+  align-items: center;
+  justify-content: center;
+}
+
+.summary-table-header .summary-table-cell {
+  font-size: 0.9rem;
+  color: #e5e7eb;
+  padding: 0.75rem;
+  font-weight: 500;
+}
+
+.summary-table-cell:last-child {
+  border-right: none;
+}
+
+.summary-table-row:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transition: background 0.3s ease;
+}
+
+/* Admin-specific styling */
+.admin .summary-table-header {
+  background: var(--navbar-bg-start);
+}
+
+.admin .summary-table-header .summary-table-cell {
   color: var(--text-secondary);
 }
 
-.summary-table th {
-  font-weight: 500;
-  text-transform: uppercase;
-  background: var(--border);
+/* Responsive design */
+@media (max-width: 768px) {
+  .summary-table-header,
+  .summary-table-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .summary-table-cell {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    line-height: 1;
+  }
+
+  .summary-table-header .summary-table-cell {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+
+  .summary-table-row .summary-table-cell:nth-child(2),
+  .summary-table-row .summary-table-cell:nth-child(4) {
+    border-bottom: none;
+  }
 }
 
-.summary-table td {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
+@media (max-width: 480px) {
+  .summary-table-header,
+  .summary-table-row {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-table-cell {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    line-height: 1;
+  }
+
+  .summary-table-row .summary-table-cell:last-child {
+    border-bottom: none;
+  }
 }
 
 .data-section {
@@ -242,7 +327,7 @@ body {
   color: var(--text-primary);
   font-weight: 500;
   font-size: 0.875rem;
-  cursor: pointer; /* Indicate clickable elements */
+  cursor: pointer;
 }
 
 .data-card .list-item a:hover,

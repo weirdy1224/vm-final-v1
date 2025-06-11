@@ -64,6 +64,16 @@ const LoginUserSchema = new mongoose.Schema({
 });
 const LoginUser = mongoose.model("LoginUser", LoginUserSchema);
 
+// New Schema for Scan Summary Statistics
+const ScanSummarySchema = new mongoose.Schema({
+  scansRunning: { type: Number, default: 0 },
+  scansCompleted: { type: Number, default: 0 },
+  openVulnerabilities: { type: Number, default: 0 },
+  totalTargets: { type: Number, default: 0 },
+  updatedAt: { type: Date, default: Date.now },
+});
+const ScanSummary = mongoose.model("ScanSummary", ScanSummarySchema);
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, BASE_UPLOAD_PATH);
@@ -311,6 +321,53 @@ app.put("/api/update-vulnerability-progress", authMiddleware, async (req, res) =
     res
       .status(500)
       .json({ message: "Error updating progress", error: error.message });
+  }
+});
+
+// New Endpoint: Get Scan Summary Statistics
+app.get("/api/scan-summary", authMiddleware, async (req, res) => {
+  try {
+    let scanSummary = await ScanSummary.findOne();
+    if (!scanSummary) {
+      // If no summary exists, create a default one
+      scanSummary = new ScanSummary({
+        scansRunning: 1,
+        scansCompleted: 3,
+        openVulnerabilities: 4,
+        totalTargets: 5,
+      });
+      await scanSummary.save();
+    }
+    res.json(scanSummary);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching scan summary", error: error.message });
+  }
+});
+
+// New Endpoint: Update Scan Summary Statistics
+app.put("/api/scan-summary", authMiddleware, async (req, res) => {
+  try {
+    const { scansRunning, scansCompleted, openVulnerabilities, totalTargets } = req.body;
+
+    let scanSummary = await ScanSummary.findOne();
+    if (!scanSummary) {
+      scanSummary = new ScanSummary();
+    }
+
+    scanSummary.scansRunning = scansRunning || scanSummary.scansRunning;
+    scanSummary.scansCompleted = scansCompleted || scanSummary.scansCompleted;
+    scanSummary.openVulnerabilities = openVulnerabilities || scanSummary.openVulnerabilities;
+    scanSummary.totalTargets = totalTargets || scanSummary.totalTargets;
+    scanSummary.updatedAt = Date.now();
+
+    await scanSummary.save();
+    res.json({ message: "Scan summary updated successfully", scanSummary });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error updating scan summary", error: error.message });
   }
 });
 

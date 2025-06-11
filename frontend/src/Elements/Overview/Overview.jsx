@@ -16,6 +16,13 @@ function Overview() {
     Low: 0,
   });
   const [companyName, setCompanyName] = useState(""); // State for company name
+  const [scanSummary, setScanSummary] = useState({
+    scansRunning: 0,
+    scansCompleted: 0,
+    openVulnerabilities: 0,
+    totalTargets: 0,
+  });
+  const [error, setError] = useState(null);
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
@@ -33,19 +40,18 @@ function Overview() {
       try {
         const response = await axios.get("http://localhost:5000/api/users", {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true, // Align with previous implementations
+          withCredentials: true,
         });
 
-        // Find the user with the matching userId
         const user = response.data.find((u) => u._id === userId);
         if (user) {
           setCompanyName(user.companyName || "Company");
         } else {
-          setCompanyName("Company"); // Fallback if user not found
+          setCompanyName("Company");
         }
       } catch (error) {
         console.error("Error fetching company name:", error);
-        setCompanyName("Company"); // Fallback name
+        setCompanyName("Company");
       }
     };
 
@@ -82,6 +88,40 @@ function Overview() {
     fetchVulnerabilityData();
   }, [userId, token]);
 
+  // Fetch scan summary statistics
+  const fetchScanSummary = async () => {
+    if (!token) return;
+
+    try {
+      const response = await axios.get("http://localhost:5000/api/scan-summary", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = response.data;
+      console.log("Fetched Scan Summary:", data); // Debug log
+      setScanSummary({
+        scansRunning: data.scansRunning,
+        scansCompleted: data.scansCompleted,
+        openVulnerabilities: data.openVulnerabilities,
+        totalTargets: data.totalTargets,
+      });
+    } catch (err) {
+      setError(err.message);
+      console.error("Error fetching scan summary:", err);
+    }
+  };
+
+  // Fetch scan summary on mount and set up periodic refresh
+  useEffect(() => {
+    fetchScanSummary();
+
+    // Refresh every 30 seconds
+    const intervalId = setInterval(fetchScanSummary, 30000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
+  }, [token]);
+
   return (
     <div className="dashboard-container">
       <Navbar />
@@ -89,6 +129,8 @@ function Overview() {
         <div className="header">
           <h1>{companyName} Security Dashboard</h1>
         </div>
+
+        {error && <p className="text-red-500 bg-red-100 p-3 rounded">{error}</p>}
 
         <div className="stats-grid">
           <div className="stat-card critical">
@@ -109,14 +151,12 @@ function Overview() {
           </div>
         </div>
 
-        <div className="summary-table">
-          <ScanSummary
-            scansRunning={1}
-            totalScansCompleted={3}
-            openVulnerabilities={4}
-            totalTargets={5}
-          />
-        </div>
+        <ScanSummary
+          scansRunning={scanSummary.scansRunning}
+          totalScansCompleted={scanSummary.scansCompleted}
+          openVulnerabilities={scanSummary.openVulnerabilities}
+          totalTargets={scanSummary.totalTargets}
+        />
 
         <div className="data-section">
           <VulnerableTargetsTable />

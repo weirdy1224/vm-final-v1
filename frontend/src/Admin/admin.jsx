@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "./Navbar/Navbar.jsx";
 import { useNavigate } from "react-router-dom";
+import ScanSummary from "../Elements/Overview/scan_summary.jsx";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -13,12 +14,18 @@ export default function Admin() {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [pendingUpdate, setPendingUpdate] = useState(null);
+  
+  const [scanSummary, setScanSummary] = useState({
+    scansRunning: 1,
+    scansCompleted: 3,
+    openVulnerabilities: 4,
+    totalTargets: 5,
+  });
 
   const handleNavigation = (path) => {
     navigate(path);
   };
 
-  // Fetch all users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -46,7 +53,75 @@ export default function Admin() {
     fetchUsers();
   }, []);
 
-  // Fetch vulnerabilities for the selected user
+  useEffect(() => {
+    const fetchScanSummary = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:5000/api/scan-summary", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch scan summary");
+        }
+
+        const data = await response.json();
+        setScanSummary({
+          scansRunning: data.scansRunning,
+          scansCompleted: data.scansCompleted,
+          openVulnerabilities: data.openVulnerabilities,
+          totalTargets: data.totalTargets,
+        });
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchScanSummary();
+  }, []);
+
+  const handleScanSummaryChange = (e) => {
+    const { name, value } = e.target;
+    setScanSummary((prev) => ({
+      ...prev,
+      [name]: parseInt(value) || 0,
+    }));
+  };
+
+  const handleSaveScanSummary = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/scan-summary", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(scanSummary),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update scan summary");
+      }
+
+      const data = await response.json();
+      setScanSummary({
+        scansRunning: data.scanSummary.scansRunning,
+        scansCompleted: data.scanSummary.scansCompleted,
+        openVulnerabilities: data.scanSummary.openVulnerabilities,
+        totalTargets: data.scanSummary.totalTargets,
+      });
+      alert("Scan summary updated successfully!");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   useEffect(() => {
     if (!selectedUserId) return;
 
@@ -79,7 +154,6 @@ export default function Admin() {
     fetchVulnerabilities();
   }, [selectedUserId]);
 
-  // Handle status change with confirmation for "Fixed"
   const handleStatusChange = (reportId, vulnIndex, newStatus) => {
     if (newStatus === "Fixed") {
       setPendingUpdate({ reportId, vulnIndex, newStatus });
@@ -89,7 +163,6 @@ export default function Admin() {
     }
   };
 
-  // Update progress state for a vulnerability
   const handleUpdateProgress = async (reportId, vulnIndex, newStatus) => {
     try {
       const token = localStorage.getItem("token");
@@ -106,10 +179,6 @@ export default function Admin() {
         throw new Error("Failed to update progress");
       }
 
-      // Log current state before update
-      console.log("Current vulnerabilities state:", vulnerabilities);
-
-      // Update local state by creating a new array
       setVulnerabilities((prev) => {
         const updatedVulnerabilities = prev.map((vuln) => {
           if (vuln.reportId === reportId && vuln.vulnIndex === vulnIndex) {
@@ -117,7 +186,6 @@ export default function Admin() {
           }
           return vuln;
         });
-        console.log("Updated vulnerabilities state:", updatedVulnerabilities);
         return updatedVulnerabilities;
       });
     } catch (error) {
@@ -125,7 +193,6 @@ export default function Admin() {
     }
   };
 
-  // Confirm the "Fixed" status update
   const confirmUpdate = () => {
     if (pendingUpdate) {
       handleUpdateProgress(
@@ -138,20 +205,81 @@ export default function Admin() {
     setPendingUpdate(null);
   };
 
-  // Cancel the update
   const cancelUpdate = () => {
     setShowModal(false);
     setPendingUpdate(null);
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100 admin">
       <SidebarProvider>
         <AppSidebar onNavigate={handleNavigation} />
         <div className="flex-1 p-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
 
-          {/* Users List */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Scan Summary Statistics</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div>
+                <label className="block text-gray-600 mb-1">Scans Running</label>
+                <input
+                  type="number"
+                  name="scansRunning"
+                  value={scanSummary.scansRunning}
+                  onChange={handleScanSummaryChange}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 mb-1">Scans Completed</label>
+                <input
+                  type="number"
+                  name="scansCompleted"
+                  value={scanSummary.scansCompleted}
+                  onChange={handleScanSummaryChange}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 mb-1">Open Vulnerabilities</label>
+                <input
+                  type="number"
+                  name="openVulnerabilities"
+                  value={scanSummary.openVulnerabilities}
+                  onChange={handleScanSummaryChange}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 mb-1">Total Targets</label>
+                <input
+                  type="number"
+                  name="totalTargets"
+                  value={scanSummary.totalTargets}
+                  onChange={handleScanSummaryChange}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  min="0"
+                />
+              </div>
+            </div>
+            <button
+              onClick={handleSaveScanSummary}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+            >
+              Save Scan Summary
+            </button>
+          </div>
+
+          <ScanSummary
+            scansRunning={scanSummary.scansRunning}
+            totalScansCompleted={scanSummary.scansCompleted}
+            openVulnerabilities={scanSummary.openVulnerabilities}
+            totalTargets={scanSummary.totalTargets}
+          />
+
           <div className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Select User</h2>
             {loading && <p className="text-gray-500">Loading...</p>}
@@ -174,7 +302,6 @@ export default function Admin() {
             )}
           </div>
 
-          {/* Vulnerabilities List */}
           {selectedUserId && (
             <div>
               <h2 className="text-2xl font-semibold text-gray-700 mb-4">Vulnerabilities</h2>
@@ -232,7 +359,6 @@ export default function Admin() {
         </div>
       </SidebarProvider>
 
-      {/* Confirmation Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
