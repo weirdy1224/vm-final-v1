@@ -21,9 +21,11 @@ const handleDownload = async (filePath, domain) => {
     }
 
     const fileUrl = filePath.startsWith("http")
-      ? fileUrl
+      ? filePath
       : `${BASE_URL}${filePath}`;
     console.log("🔗 File Download URL:", fileUrl);
+    // ...rest of your code
+
 
     const sanitizedDomain = domain
       ? domain.replace(/https?:\/\//, "").replace(/\W+/g, "_")

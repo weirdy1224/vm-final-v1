@@ -166,7 +166,7 @@ export default function Reports() {
   };
 
   const handleFileUpload = async () => {
-    const userId = localStorage.getItem("userId");
+    const userId = manualData.userId;
     const token = localStorage.getItem("token");
 
     if (!selectedFile || !userId) {
@@ -207,8 +207,7 @@ export default function Reports() {
         error.response?.status
       );
       alert(
-        `Error uploading file: ${
-          error.response?.data?.message || error.message
+        `Error uploading file: ${error.response?.data?.message || error.message
         }`
       );
       setUploadMessage("Error uploading file.");
@@ -251,9 +250,10 @@ export default function Reports() {
               >
                 <option value="">Select a user</option>
                 {users.map((user) => (
-                  <option key={user._id} value={user.uniqueId}>
+                  <option key={user._id} value={user._id}>
                     {user.companyName}
                   </option>
+
                 ))}
               </select>
               <input
@@ -422,9 +422,10 @@ export default function Reports() {
               >
                 <option value="">Select a user</option>
                 {users.map((user) => (
-                  <option key={user._id} value={user.uniqueId}>
+                  <option key={user._id} value={user._id}>
                     {user.companyName}
                   </option>
+
                 ))}
               </select>
               <input
